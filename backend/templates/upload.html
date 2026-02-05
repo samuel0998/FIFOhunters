@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>FIFO Hunters - Upload</title>
+
+  <style>
+    body {
+      background: #0f172a;
+      color: #e5e7eb;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .card {
+      background: #020617;
+      padding: 30px;
+      border-radius: 10px;
+      width: 420px;
+      box-shadow: 0 0 20px rgba(0,0,0,.6);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      margin-bottom: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .msg {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .success { color: #22c55e; }
+    .error { color: #ef4444; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>📤 Upload Excel FIFO</h2>
+
+    <input type="file" id="file" accept=".xlsx" />
+
+    <button onclick="uploadExcel()">Enviar</button>
+
+    <div id="msg" class="msg"></div>
+  </div>
+
+  <script src="/static/js/upload.js"></script>
+</body>
+</html>
