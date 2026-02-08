@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>FIFO Hunters - Scan</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <header>
+    <h1>FIFO HUNTERS</h1>
+    <p>Scanner FIFO</p>
+  </header>
+
+  <div class="scan-box">
+    <input
+      id="scanInput"
+      type="text"
+      placeholder="Escaneie EAN, ASIN ou ISD"
+      autofocus
+      onkeydown="if(event.key==='Enter') scanValor()"
+    >
+    <button onclick="scanValor()">Scan</button>
+  </div>
+
+  <div id="result"></div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>

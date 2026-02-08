@@ -1,75 +1,46 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>FIFO Hunters - Upload</title>
-
-  <style>
-    body {
-      background: #0f172a;
-      color: #e5e7eb;
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .card {
-      background: #020617;
-      padding: 30px;
-      border-radius: 10px;
-      width: 420px;
-      box-shadow: 0 0 20px rgba(0,0,0,.6);
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    input[type="file"] {
-      width: 100%;
-      margin-bottom: 15px;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #2563eb;
-      color: white;
-      font-weight: bold;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #1d4ed8;
-    }
-
-    .msg {
-      margin-top: 15px;
-      text-align: center;
-      font-size: 14px;
-    }
-
-    .success { color: #22c55e; }
-    .error { color: #ef4444; }
-  </style>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-  <div class="card">
-    <h2>📤 Upload Excel FIFO</h2>
+  <header>
+    <h1>FIFO HUNTERS</h1>
+    <p>Upload da Planilha</p>
+  </header>
 
-    <input type="file" id="file" accept=".xlsx" />
+  <form id="uploadForm">
+    <input type="file" id="file" accept=".xlsx" required>
+    <button type="submit">Enviar</button>
+  </form>
 
-    <button onclick="uploadExcel()">Enviar</button>
+  <p id="msg"></p>
 
-    <div id="msg" class="msg"></div>
-  </div>
+  <script>
+    document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-  <script src="/static/js/upload.js"></script>
+      const file = document.getElementById("file").files[0];
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload/excel", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        window.location.href = "/scan";
+      } else {
+        document.getElementById("msg").innerText = data.error;
+      }
+    });
+  </script>
+
 </body>
 </html>
