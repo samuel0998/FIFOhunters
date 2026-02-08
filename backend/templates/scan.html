@@ -50,16 +50,32 @@ async function scanFIFO() {
 card.className = `card ${statusClass}`;
 
         card.innerHTML = `
-            <h3>${item.produto}</h3>
-            <p><b>NF-e:</b> ${item.nfe}</p>
-            <p><b>ISD:</b> ${item.isd}</p>
-            <p><b>Data abertura:</b> ${item.data_abertura || "-"}</p>
-            <p><b>Esperado:</b> ${item.quantidade_esperada}</p>
-            <p><b>Recebido:</b> ${item.quantidade_recebida}</p>
-            <p><b>Falta receber:</b> ${item.falta_receber}</p>
-            <p><b>FIFO Days:</b> ${item.fifo_days}</p>
-            <span class="status">${item.status}</span>
-        `;
+    <h3>${item.produto}</h3>
+
+    <p><b>ISA:</b> ${item.isa}</p>
+    <p><b>ISD:</b> ${item.isd}</p>
+    <p><b>Data abertura:</b> ${item.data_abertura || "-"}</p>
+    <p><b>Esperado:</b> ${item.quantidade_esperada}</p>
+    <p><b>Recebido:</b> ${item.quantidade_recebida}</p>
+
+    <div class="highlight">
+        <div>
+            <span>FALTA / SOBRA</span>
+            <strong>${item.falta_receber}</strong>
+        </div>
+
+        <div>
+            <span>FIFO DAYS</span>
+            <strong>${item.fifo_days}</strong>
+        </div>
+
+        <div>
+            <span>STATUS</span>
+            <div class="status-badge">${item.status}</div>
+        </div>
+    </div>
+`;
+
 
         container.appendChild(card);
     });
