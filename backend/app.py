@@ -3,6 +3,7 @@ from flask import Flask, render_template
 from dotenv import load_dotenv
 from extensions import db, migrate
 
+
 load_dotenv()
 
 
@@ -18,6 +19,10 @@ def create_app():
 
     from routes.upload import upload_bp
     app.register_blueprint(upload_bp, url_prefix="/api")
+
+    from models.scan import scan_bp
+    app.register_blueprint(scan_bp, url_prefix="/api")
+
 
     @app.route("/")
     def index():
