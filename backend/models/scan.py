@@ -1,51 +1,56 @@
+# routes/scan.py
 from flask import Blueprint, request, jsonify
 from datetime import date
 from models.fifo_item import FIFOItem
+from extensions import db
 
 scan_bp = Blueprint("scan", __name__)
 
 
+def calc_status(days):
+    if days <= 3:
+        return "OK"
+    elif days <= 7:
+        return "ATENCAO"
+    return "CRITICO"
+
+
 @scan_bp.route("/scan", methods=["GET"])
-def scan_item():
+def scan():
     code = request.args.get("code")
 
     if not code:
         return jsonify({"error": "Código não informado"}), 400
 
-    query = FIFOItem.query.filter(
+    # busca por EAN, ASIN ou ISD
+    itens = FIFOItem.query.filter(
         (FIFOItem.ean == code) |
         (FIFOItem.asin == code) |
         (FIFOItem.isd == code)
     ).all()
 
-    if not query:
-        return jsonify({"error": "Nenhum dado encontrado"}), 404
+    if not itens:
+        return jsonify([])
 
     hoje = date.today()
     resultado = []
 
-    for item in query:
-        fifo_days = (hoje - item.opened_since).days if item.opened_since else None
-        falta = (item.expected or 0) - (item.received or 0)
-
-        # STATUS VISUAL
-        if fifo_days is None:
-            status = "OK"
-        elif fifo_days <= 7:
-            status = "OK"
-        elif fifo_days <= 14:
-            status = "ATENÇÃO"
+    for item in itens:
+        if item.opened_since:
+            fifo_days = (hoje - item.opened_since).days
         else:
-            status = "CRÍTICO"
+            fifo_days = 0
+
+        status = calc_status(fifo_days)
 
         resultado.append({
-            "descricao": item.description,
+            "produto": item.description,
             "nfe": item.nfe_id,
             "isd": item.isd,
-            "opened_since": item.opened_since.isoformat() if item.opened_since else None,
-            "expected": item.expected,
-            "received": item.received,
-            "falta": falta,
+            "data_abertura": item.opened_since.isoformat() if item.opened_since else None,
+            "quantidade_esperada": item.expected or 0,
+            "quantidade_recebida": item.received or 0,
+            "falta_receber": (item.expected or 0) - (item.received or 0),
             "fifo_days": fifo_days,
             "status": status
         })

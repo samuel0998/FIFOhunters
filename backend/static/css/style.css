@@ -206,3 +206,60 @@ header {
 .error {
     color: #ef4444;
 }
+
+
+body {
+    background: #0f172a;
+    color: #e5e7eb;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-upload {
+    background: #2563eb;
+    padding: 10px 16px;
+    border-radius: 8px;
+    color: white;
+    text-decoration: none;
+}
+
+.scan-box {
+    margin: 20px 0;
+}
+
+.scan-box input {
+    padding: 10px;
+    width: 300px;
+}
+
+.scan-box button {
+    padding: 10px 16px;
+    margin-left: 8px;
+}
+
+#results {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.card {
+    background: #020617;
+    padding: 16px;
+    border-radius: 12px;
+}
+
+.card.ok { border-left: 6px solid #22c55e; }
+.card.atencao { border-left: 6px solid #facc15; }
+.card.critico { border-left: 6px solid #ef4444; }
+
+.status {
+    font-weight: bold;
+}
+

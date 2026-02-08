@@ -1,28 +1,65 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>FIFO Hunters • Scan</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>FIFO Hunters</title>
+    <link rel="stylesheet" href="/static/scan.css">
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <h1>FIFO HUNTERS</h1>
-        <button class="btn-secondary" onclick="window.location.href='/upload'">
-            🔄 Atualizar Planilha
-        </button>
-    </header>
-
-    <div class="scan-box">
-        <input type="text" id="scanInput" placeholder="Escaneie EAN / ASIN / ISD">
-        <button onclick="scan()">Scan</button>
-    </div>
-
-    <div id="results"></div>
+<div class="top">
+    <h1>FIFO HUNTERS</h1>
+    <a href="/" class="btn-upload">Atualizar Planilha</a>
 </div>
 
-<script src="/static/scan.js"></script>
+<div class="scan-box">
+    <input id="scanInput" placeholder="EAN / ASIN / ISD" autofocus>
+    <button onclick="scanFIFO()">Scan</button>
+</div>
+
+<div id="results"></div>
+
+<script>
+async function scanFIFO() {
+    const code = document.getElementById("scanInput").value.trim();
+    const container = document.getElementById("results");
+
+    container.innerHTML = "<p>Buscando...</p>";
+
+    if (!code) {
+        container.innerHTML = "<p>Informe um código</p>";
+        return;
+    }
+
+    const res = await fetch(`/api/scan?code=${code}`);
+    const data = await res.json();
+
+    if (!data.length) {
+        container.innerHTML = "<p>Nenhum dado encontrado</p>";
+        return;
+    }
+
+    container.innerHTML = "";
+
+    data.forEach(item => {
+        const card = document.createElement("div");
+        card.className = `card ${item.status.toLowerCase()}`;
+
+        card.innerHTML = `
+            <h3>${item.produto}</h3>
+            <p><b>NF-e:</b> ${item.nfe}</p>
+            <p><b>ISD:</b> ${item.isd}</p>
+            <p><b>Data abertura:</b> ${item.data_abertura || "-"}</p>
+            <p><b>Esperado:</b> ${item.quantidade_esperada}</p>
+            <p><b>Recebido:</b> ${item.quantidade_recebida}</p>
+            <p><b>Falta receber:</b> ${item.falta_receber}</p>
+            <p><b>FIFO Days:</b> ${item.fifo_days}</p>
+            <span class="status">${item.status}</span>
+        `;
+
+        container.appendChild(card);
+    });
+}
+</script>
+
 </body>
 </html>
