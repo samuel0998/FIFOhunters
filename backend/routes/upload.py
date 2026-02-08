@@ -6,6 +6,12 @@ from extensions import db
 upload_bp = Blueprint("upload", __name__)
 
 
+def safe_date(value):
+    if pd.isna(value):
+        return None
+    return pd.to_datetime(value)
+
+
 @upload_bp.route("/upload/excel", methods=["POST"])
 def upload_excel():
     if "file" not in request.files:
@@ -19,7 +25,7 @@ def upload_excel():
     try:
         df = pd.read_excel(file)
 
-        # 🔥 normaliza colunas
+        # normaliza colunas
         df.columns = (
             df.columns
             .str.strip()
@@ -28,7 +34,7 @@ def upload_excel():
             .str.replace("-", "_")
         )
 
-        # 🔥 limpa tudo antes de inserir
+        # limpa tabela
         db.session.query(FIFOItem).delete()
 
         itens = []
@@ -46,12 +52,13 @@ def upload_excel():
                 ean_taxable=str(row.get("ean_taxable", "")),
                 received=int(row.get("received", 0)) if not pd.isna(row.get("received")) else 0,
                 expected=int(row.get("expected", 0)) if not pd.isna(row.get("expected")) else 0,
-                opened_since=pd.to_datetime(row.get("opened_since"), errors="coerce"),
-                last_receipt=pd.to_datetime(row.get("last_receipt"), errors="coerce"),
                 difference=int(row.get("overage/shortage", 0))
                 if "overage/shortage" in df.columns and not pd.isna(row.get("overage/shortage"))
-                else None
+                else None,
+                opened_since=safe_date(row.get("opened_since")),
+                last_receipt=safe_date(row.get("last_receipt")),
             )
+
             itens.append(item)
 
         db.session.bulk_save_objects(itens)
