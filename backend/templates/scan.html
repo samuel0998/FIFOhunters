@@ -1,30 +1,28 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>FIFO Hunters - Scan</title>
-  <link rel="stylesheet" href="/static/style.css">
+    <meta charset="UTF-8">
+    <title>FIFO Hunters • Scan</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-  <header>
-    <h1>FIFO HUNTERS</h1>
-    <p>Scanner FIFO</p>
-  </header>
+<div class="container">
+    <header>
+        <h1>FIFO HUNTERS</h1>
+        <button class="btn-secondary" onclick="window.location.href='/upload'">
+            🔄 Atualizar Planilha
+        </button>
+    </header>
 
-  <div class="scan-box">
-    <input
-      id="scanInput"
-      type="text"
-      placeholder="Escaneie EAN, ASIN ou ISD"
-      autofocus
-      onkeydown="if(event.key==='Enter') scanValor()"
-    >
-    <button onclick="scanValor()">Scan</button>
-  </div>
+    <div class="scan-box">
+        <input type="text" id="scanInput" placeholder="Escaneie EAN / ASIN / ISD">
+        <button onclick="scan()">Scan</button>
+    </div>
 
-  <div id="result"></div>
+    <div id="results"></div>
+</div>
 
-  <script src="/static/script.js"></script>
+<script src="/static/scan.js"></script>
 </body>
 </html>

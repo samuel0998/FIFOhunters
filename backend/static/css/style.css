@@ -144,3 +144,65 @@ button:active {
         transform: translateY(0);
     }
 }
+
+body {
+    font-family: Arial, sans-serif;
+    background: #0b1220;
+    color: #fff;
+}
+
+.container {
+    width: 90%;
+    margin: auto;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.scan-box {
+    margin: 20px 0;
+}
+
+.scan-box input {
+    padding: 10px;
+    width: 300px;
+    font-size: 16px;
+}
+
+.scan-box button {
+    padding: 10px 20px;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background: #374151;
+    color: #fff;
+    border: none;
+    padding: 8px 15px;
+    cursor: pointer;
+}
+
+.card {
+    background: #111827;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-left: 6px solid;
+}
+
+.card.OK { border-color: #22c55e; }
+.card.ATENÇÃO { border-color: #facc15; }
+.card.CRÍTICO { border-color: #ef4444; }
+
+.status {
+    font-weight: bold;
+}
+
+.error {
+    color: #ef4444;
+}

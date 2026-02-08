@@ -86,3 +86,43 @@ function formatDate(dateStr) {
   return d.toLocaleDateString("pt-BR");
 }
 
+async function scan() {
+    const code = document.getElementById("scanInput").value.trim();
+    const resultsDiv = document.getElementById("results");
+
+    resultsDiv.innerHTML = "";
+
+    if (!code) {
+        alert("Escaneie um código");
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/scan?code=${code}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+            resultsDiv.innerHTML = `<p class="error">${data.error}</p>`;
+            return;
+        }
+
+        data.forEach(item => {
+            resultsDiv.innerHTML += `
+                <div class="card ${item.status}">
+                    <h3>${item.descricao}</h3>
+                    <p><strong>NF-e:</strong> ${item.nfe}</p>
+                    <p><strong>ISD:</strong> ${item.isd}</p>
+                    <p><strong>Abertura:</strong> ${item.opened_since}</p>
+                    <p><strong>Esperado:</strong> ${item.expected}</p>
+                    <p><strong>Recebido:</strong> ${item.received}</p>
+                    <p><strong>Falta:</strong> ${item.falta}</p>
+                    <p><strong>FIFO Days:</strong> ${item.fifo_days}</p>
+                    <span class="status">${item.status}</span>
+                </div>
+            `;
+        });
+
+    } catch (err) {
+        resultsDiv.innerHTML = `<p class="error">Erro ao consultar</p>`;
+    }
+}

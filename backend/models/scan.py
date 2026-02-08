@@ -1,54 +1,36 @@
-# routes/scan.py
 from flask import Blueprint, request, jsonify
-from models.fifo_item import FIFOItem
 from datetime import date
+from models.fifo_item import FIFOItem
 
 scan_bp = Blueprint("scan", __name__)
 
 
 @scan_bp.route("/scan", methods=["GET"])
-def scan():
-    q = request.args.get("q")
+def scan_item():
+    code = request.args.get("code")
 
-    if not q:
-        return jsonify({"error": "Valor de scan não informado"}), 400
+    if not code:
+        return jsonify({"error": "Código não informado"}), 400
+
+    query = FIFOItem.query.filter(
+        (FIFOItem.ean == code) |
+        (FIFOItem.asin == code) |
+        (FIFOItem.isd == code)
+    ).all()
+
+    if not query:
+        return jsonify({"error": "Nenhum dado encontrado"}), 404
 
     hoje = date.today()
+    resultado = []
 
-    # 🔵 TENTA COMO ISD PRIMEIRO
-    itens = FIFOItem.query.filter(FIFOItem.isd == q).all()
-    tipo_scan = "ISD"
+    for item in query:
+        fifo_days = (hoje - item.opened_since).days if item.opened_since else None
+        falta = (item.expected or 0) - (item.received or 0)
 
-    # 🟢 SE NÃO FOR ISD, TENTA EAN / ASIN
-    if not itens:
-        itens = FIFOItem.query.filter(
-            (FIFOItem.ean == q) | (FIFOItem.asin == q)
-        ).order_by(FIFOItem.opened_since.asc()).all()
-        tipo_scan = "PRODUTO"
-
-    if not itens:
-        return jsonify({"error": "Nenhum registro encontrado"}), 404
-
-    resposta = []
-
-    for item in itens:
-        # FIFO DAYS
-        fifo_days = (
-            (hoje - item.opened_since).days
-            if item.opened_since
-            else None
-        )
-
-        # DIFERENÇA
-        falta = (
-            item.expected - item.received
-            if item.expected is not None and item.received is not None
-            else None
-        )
-
-        # STATUS
+        # STATUS VISUAL
         if fifo_days is None:
-            status = "SEM DATA"
+            status = "OK"
         elif fifo_days <= 7:
             status = "OK"
         elif fifo_days <= 14:
@@ -56,24 +38,16 @@ def scan():
         else:
             status = "CRÍTICO"
 
-        resposta.append({
-            "tipo_scan": tipo_scan,
-
+        resultado.append({
             "descricao": item.description,
+            "nfe": item.nfe_id,
             "isd": item.isd,
-
-            "ean": item.ean,
-            "asin": item.asin,
-
-            "nfe_id": item.nfe_id,
             "opened_since": item.opened_since.isoformat() if item.opened_since else None,
-
             "expected": item.expected,
             "received": item.received,
-            "falta_receber": falta,
-
+            "falta": falta,
             "fifo_days": fifo_days,
             "status": status
         })
 
-    return jsonify(resposta), 200
+    return jsonify(resultado)
