@@ -5,11 +5,13 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-
 <div class="top">
     <h1>FIFO HUNTERS</h1>
-    <a href="/" class="btn-upload">Atualizar Planilha</a>
+    <a href="{{ url_for('upload_page') }}" class="btn-upload">
+        Atualizar Planilha
+    </a>
 </div>
+
 
 <div class="scan-box">
     <input id="scanInput" placeholder="EAN / ASIN / ISD" autofocus>
