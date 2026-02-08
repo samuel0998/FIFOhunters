@@ -48,6 +48,7 @@ def scan():
         resultado.append({
             "produto": item.description,
             "nfe": item.nfe_id,
+            "isa": item.isa or "-",
             "isd": item.isd,
             "data_abertura": item.opened_since.isoformat() if item.opened_since else None,
             "quantidade_esperada": item.expected or 0,

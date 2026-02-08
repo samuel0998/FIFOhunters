@@ -51,8 +51,7 @@ card.className = `card ${statusClass}`;
 
         card.innerHTML = `
     <h3>${item.produto}</h3>
-
-    <p><b>ISA:</b> ${item.isa}</p>
+    <p><b>ISA:</b> ${item.isa ?? "-"}</p>
     <p><b>ISD:</b> ${item.isd}</p>
     <p><b>Data abertura:</b> ${item.data_abertura || "-"}</p>
     <p><b>Esperado:</b> ${item.quantidade_esperada}</p>

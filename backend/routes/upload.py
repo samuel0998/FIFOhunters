@@ -7,23 +7,37 @@ from extensions import db
 upload_bp = Blueprint("upload", __name__)
 
 
+# ---------- HELPERS ----------
+
+def safe_str(value):
+    """
+    Converte qualquer valor para string limpa.
+    Remove .0 de números grandes (ISA, ISD, EAN etc).
+    """
+    if pd.isna(value):
+        return None
+    return str(value).strip().replace(".0", "")
+
+
+def safe_int(value):
+    if pd.isna(value):
+        return 0
+    try:
+        return int(value)
+    except Exception:
+        return 0
+
+
 def safe_date(value):
     if pd.isna(value):
         return None
-    return pd.to_datetime(value, errors="coerce")
-
-
-def normalize_text(value):
-    if pd.isna(value):
+    dt = pd.to_datetime(value, errors="coerce")
+    if pd.isna(dt):
         return None
-    return str(value).strip()
+    return dt.date()
 
 
-def normalize_ean(value):
-    if pd.isna(value):
-        return None
-    return str(value).split(".")[0].strip()
-
+# ---------- ROUTE ----------
 
 @upload_bp.route("/upload/excel", methods=["POST"])
 def upload_excel():
@@ -32,13 +46,13 @@ def upload_excel():
 
     file = request.files["file"]
 
-    if not file.filename.endswith(".xlsx"):
+    if not file.filename.lower().endswith(".xlsx"):
         return jsonify({"error": "Formato inválido. Envie .xlsx"}), 400
 
     try:
         df = pd.read_excel(file)
 
-        # normaliza colunas
+        # NORMALIZA COLUNAS
         df.columns = (
             df.columns
             .str.strip()
@@ -48,27 +62,37 @@ def upload_excel():
             .str.replace("/", "_")
         )
 
-        # LIMPA TUDO ANTES DE REINSERIR
+        # LIMPA TABELA (REESCREVE TUDO)
         db.session.query(FIFOItem).delete()
+        db.session.commit()
 
         itens = []
 
         for _, row in df.iterrows():
             item = FIFOItem(
-                nfe_id=normalize_text(row.get("nf_e_id")),
-                vendor=normalize_text(row.get("vendor")),
-                isa=normalize_text(row.get("isa")),
-                isd=normalize_text(row.get("isd")),
-                description=normalize_text(row.get("description")),
-                po=normalize_text(row.get("po")),
-                asin=normalize_text(row.get("asin")),
-                ean=normalize_ean(row.get("ean")),
-                ean_taxable=normalize_ean(row.get("ean_taxable")),
-                received=int(row.get("received", 0)) if not pd.isna(row.get("received")) else 0,
-                expected=int(row.get("expected", 0)) if not pd.isna(row.get("expected")) else 0,
-                difference=int(row.get("overage_shortage", 0))
-                if "overage_shortage" in df.columns and not pd.isna(row.get("overage_shortage"))
-                else None,
+                nfe_id=safe_str(row.get("nf_e_id")),
+                vendor=safe_str(row.get("vendor")),
+
+                # 🔥 CORREÇÃO DEFINITIVA DO ISA
+                isa=safe_str(row.get("isa")),
+                isd=safe_str(row.get("isd")),
+
+                description=safe_str(row.get("description")),
+                po=safe_str(row.get("po")),
+                asin=safe_str(row.get("asin")),
+
+                ean=safe_str(row.get("ean")),
+                ean_taxable=safe_str(row.get("ean_taxable")),
+
+                received=safe_int(row.get("received")),
+                expected=safe_int(row.get("expected")),
+
+                difference=safe_int(
+                    row.get("overage_shortage")
+                    if "overage_shortage" in df.columns
+                    else None
+                ),
+
                 opened_since=safe_date(row.get("opened_since")),
                 last_receipt=safe_date(row.get("last_receipt")),
             )
