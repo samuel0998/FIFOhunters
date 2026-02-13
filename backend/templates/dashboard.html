@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard FIFO</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<div class="top">
+    <h1>DASHBOARD FIFO</h1>
+    <a href="/scan" class="btn-upload">Scanner</a>
+</div>
+
+<div class="cards">
+    <div class="dash-card ok" onclick="filterStatus('OK')">
+        <h3>OK</h3>
+        <span id="okCount">0</span>
+    </div>
+
+    <div class="dash-card atencao" onclick="filterStatus('ATENCAO')">
+        <h3>ATENÇÃO</h3>
+        <span id="warnCount">0</span>
+    </div>
+
+    <div class="dash-card critico" onclick="filterStatus('CRITICO')">
+        <h3>CRÍTICO</h3>
+        <span id="critCount">0</span>
+    </div>
+</div>
+
+<h2>Distribuição por Dia (Cones)</h2>
+
+<div id="coneGrid" class="cone-grid"></div>
+
+<canvas id="statusChart"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+async function loadDashboard() {
+    const res = await fetch("/api/dashboard/full");
+    const data = await res.json();
+
+    document.getElementById("okCount").innerText = data.OK;
+    document.getElementById("warnCount").innerText = data.ATENCAO;
+    document.getElementById("critCount").innerText = data.CRITICO;
+
+    createChart(data);
+    renderCones(data.cones);
+}
+
+function createChart(data) {
+    new Chart(document.getElementById("statusChart"), {
+        type: "doughnut",
+        data: {
+            labels: ["OK", "ATENÇÃO", "CRÍTICO"],
+            datasets: [{
+                data: [data.OK, data.ATENCAO, data.CRITICO],
+                backgroundColor: ["#22c55e", "#facc15", "#ef4444"]
+            }]
+        }
+    });
+}
+
+function renderCones(cones) {
+    const grid = document.getElementById("coneGrid");
+    grid.innerHTML = "";
+
+    for (const dia in cones) {
+        const div = document.createElement("div");
+        div.className = "cone-card";
+        div.innerHTML = `
+            <div class="cone-label">${dia}</div>
+            <div class="cone-count">${cones[dia]}</div>
+        `;
+        grid.appendChild(div);
+    }
+}
+
+function filterStatus(status) {
+    window.location.href = `/scan?status=${status}`;
+}
+
+loadDashboard();
+</script>
+
+</body>
+</html>

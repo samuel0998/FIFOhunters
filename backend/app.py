@@ -56,5 +56,10 @@ def create_app():
     @app.route("/health")
     def health():
         return {"status": "FIFO HUNTERS API ONLINE"}
+    
+    @app.route("/dashboard")
+    def dashboard():
+        return render_template("dashboard.html")
+
 
     return app

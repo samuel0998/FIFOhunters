@@ -43,43 +43,37 @@ async function scanFIFO() {
     container.innerHTML = "";
 
     data.forEach(item => {
-        const card = document.createElement("div");
-        const statusClass = item.status
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    const card = document.createElement("div");
+    card.className = `card ${item.status.toLowerCase()}`;
 
-card.className = `card ${statusClass}`;
+    card.innerHTML = `
+        <div class="cone ${item.cone_cor}"></div>
 
-        card.innerHTML = `
-    <h3>${item.produto}</h3>
-    <p><b>ISA:</b> ${item.isa ?? "-"}</p>
-    <p><b>ISD:</b> ${item.isd}</p>
-    <p><b>Data abertura:</b> ${item.data_abertura || "-"}</p>
-    <p><b>Esperado:</b> ${item.quantidade_esperada}</p>
-    <p><b>Recebido:</b> ${item.quantidade_recebida}</p>
+        <h3>${item.produto}</h3>
 
-    <div class="highlight">
-        <div>
-            <span>FALTA / SOBRA</span>
-            <strong>${item.falta_receber}</strong>
+        <p><b>ISA:</b> ${item.isa}</p>
+        <p><b>ISD:</b> ${item.isd}</p>
+        <p><b>Data abertura:</b> ${item.data_abertura || "-"}</p>
+
+        <div class="highlight">
+            <div>
+                <span>FALTA</span>
+                <strong>${item.falta_receber}</strong>
+            </div>
+            <div>
+                <span>FIFO DAYS</span>
+                <strong>${item.fifo_days}</strong>
+            </div>
+            <div>
+                <span>STATUS</span>
+                <strong>${item.status}</strong>
+            </div>
         </div>
+    `;
 
-        <div>
-            <span>FIFO DAYS</span>
-            <strong>${item.fifo_days}</strong>
-        </div>
+    container.appendChild(card);
+});
 
-        <div>
-            <span>STATUS</span>
-            <div class="status-badge">${item.status}</div>
-        </div>
-    </div>
-`;
-
-
-        container.appendChild(card);
-    });
 }
 </script>
 
