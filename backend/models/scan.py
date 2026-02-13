@@ -97,40 +97,55 @@ def scan():
 
 @scan_bp.route("/dashboard/full", methods=["GET"])
 def dashboard_full():
+    from sqlalchemy import func
+    from collections import defaultdict
 
     hoje = date.today()
 
+    # 🔥 AGRUPA POR ISA (1 VEZ CADA)
+    isas = (
+        db.session.query(
+            FIFOItem.isa,
+            func.min(FIFOItem.opened_since).label("opened_since")
+        )
+        .group_by(FIFOItem.isa)
+        .all()
+    )
+
     resumo = {
+        "total_isa": 0,
+        "total_asin": FIFOItem.query.count(),
         "OK": 0,
         "ATENCAO": 0,
         "CRITICO": 0,
         "cones": {
-            "Domingo": 0,
-            "Segunda": 0,
-            "Terça": 0,
-            "Quarta": 0,
-            "Quinta": 0,
-            "Sexta": 0,
-            "Sábado": 0,
+            "Domingo": {"total": 0, "cor": "black"},
+            "Segunda": {"total": 0, "cor": "blue"},
+            "Terça": {"total": 0, "cor": "yellow"},
+            "Quarta": {"total": 0, "cor": "green"},
+            "Quinta": {"total": 0, "cor": "orange"},
+            "Sexta": {"total": 0, "cor": "white"},
+            "Sábado": {"total": 0, "cor": "pink"},
         }
     }
 
-    itens = FIFOItem.query.all()
+    resumo["total_isa"] = len(isas)
 
-    for item in itens:
+    for isa, opened_since in isas:
 
-        fifo_days = 0
-        cone = None
+        if not opened_since:
+            continue
 
-        if item.opened_since:
-            fifo_days = (hoje - item.opened_since).days
-            weekday = (item.opened_since.weekday() + 1) % 7
-            cone = CONE_MAP.get(weekday)
+        dias = (hoje - opened_since).days
+        status = calc_status(dias)
 
-        status = calc_status(fifo_days)
         resumo[status] += 1
 
+        weekday = opened_since.weekday()
+        cone = CONE_MAP.get(weekday)
+
         if cone:
-            resumo["cones"][cone["nome"]] += 1
+            resumo["cones"][cone["nome"]]["total"] += 1
 
     return jsonify(resumo)
+

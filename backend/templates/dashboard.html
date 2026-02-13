@@ -14,7 +14,21 @@
     <a href="/scan" class="btn-upload">Scanner</a>
 </div>
 
-<!-- ===================== CARDS DE STATUS ===================== -->
+<!-- ===================== RESUMO GERAL ===================== -->
+
+<div class="summary-cards">
+    <div class="summary-card">
+        <h4>Total ISA</h4>
+        <span id="totalISA">0</span>
+    </div>
+
+    <div class="summary-card">
+        <h4>Total ASIN</h4>
+        <span id="totalASIN">0</span>
+    </div>
+</div>
+
+<!-- ===================== STATUS ===================== -->
 
 <div class="dashboard-cards">
 
@@ -37,7 +51,7 @@
 
 <!-- ===================== CONES ===================== -->
 
-<h2 class="section-title">Distribuição por Cones</h2>
+<h2 class="section-title">Distribuição por Cones (por ISA)</h2>
 
 <div id="coneGrid" class="cone-grid"></div>
 
@@ -60,6 +74,11 @@ async function loadDashboard() {
     const res = await fetch("/api/dashboard/full");
     const data = await res.json();
 
+    // Totais
+    document.getElementById("totalISA").innerText = data.total_isa;
+    document.getElementById("totalASIN").innerText = data.total_asin;
+
+    // Status
     document.getElementById("okCount").innerText = data.OK;
     document.getElementById("warnCount").innerText = data.ATENCAO;
     document.getElementById("critCount").innerText = data.CRITICO;
@@ -88,6 +107,13 @@ function createChart(data) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#fff"
+                    }
+                }
+            }
         }
     });
 }
@@ -97,29 +123,18 @@ function renderCones(cones) {
     const grid = document.getElementById("coneGrid");
     grid.innerHTML = "";
 
-    const coneColors = {
-        "Domingo": "black",
-        "Segunda": "blue",
-        "Terça": "yellow",
-        "Quarta": "green",
-        "Quinta": "orange",
-        "Sexta": "white",
-        "Sábado": "pink"
-    };
-
     for (const dia in cones) {
 
         const div = document.createElement("div");
         div.className = "cone-card";
-
         div.onclick = () => filterCone(dia);
 
         div.innerHTML = `
             <div class="cone-header">
-                <div class="cone-circle" style="background:${coneColors[dia]}"></div>
+                <div class="cone-circle" style="background:${cones[dia].cor}"></div>
                 <span>${dia}</span>
             </div>
-            <div class="cone-count">${cones[dia]}</div>
+            <div class="cone-count">${cones[dia].total}</div>
         `;
 
         grid.appendChild(div);
