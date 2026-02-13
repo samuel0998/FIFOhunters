@@ -271,3 +271,23 @@ body {
     font-size: 28px;
     font-weight: bold;
 }
+
+
+.chart-wrapper {
+    max-width: 600px;
+    margin: 40px auto;
+}
+
+canvas {
+    width: 100% !important;
+    height: 400px !important;
+}
+
+.cone-indicator {
+    margin-top: 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    text-align: center;
+    color: #000;
+}

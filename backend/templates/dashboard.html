@@ -1,9 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
+    <meta charset="UTF-8">
     <title>Dashboard FIFO</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 
 <div class="top">
@@ -11,7 +14,10 @@
     <a href="/scan" class="btn-upload">Scanner</a>
 </div>
 
-<div class="cards">
+<!-- ===================== CARDS DE STATUS ===================== -->
+
+<div class="dashboard-cards">
+
     <div class="dash-card ok" onclick="filterStatus('OK')">
         <h3>OK</h3>
         <span id="okCount">0</span>
@@ -26,18 +32,31 @@
         <h3>CRÍTICO</h3>
         <span id="critCount">0</span>
     </div>
+
 </div>
 
-<h2>Distribuição por Dia (Cones)</h2>
+<!-- ===================== CONES ===================== -->
+
+<h2 class="section-title">Distribuição por Cones</h2>
 
 <div id="coneGrid" class="cone-grid"></div>
 
-<canvas id="statusChart"></canvas>
+<!-- ===================== GRÁFICO ===================== -->
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<h2 class="section-title">Gráfico de Criticidade</h2>
+
+<div class="chart-container">
+    <canvas id="statusChart"></canvas>
+</div>
+
+<!-- ===================== SCRIPT ===================== -->
 
 <script>
+
+let chartInstance = null;
+
 async function loadDashboard() {
+
     const res = await fetch("/api/dashboard/full");
     const data = await res.json();
 
@@ -45,12 +64,19 @@ async function loadDashboard() {
     document.getElementById("warnCount").innerText = data.ATENCAO;
     document.getElementById("critCount").innerText = data.CRITICO;
 
-    createChart(data);
     renderCones(data.cones);
+    createChart(data);
 }
 
 function createChart(data) {
-    new Chart(document.getElementById("statusChart"), {
+
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+
+    const ctx = document.getElementById("statusChart").getContext("2d");
+
+    chartInstance = new Chart(ctx, {
         type: "doughnut",
         data: {
             labels: ["OK", "ATENÇÃO", "CRÍTICO"],
@@ -58,21 +84,44 @@ function createChart(data) {
                 data: [data.OK, data.ATENCAO, data.CRITICO],
                 backgroundColor: ["#22c55e", "#facc15", "#ef4444"]
             }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
         }
     });
 }
 
 function renderCones(cones) {
+
     const grid = document.getElementById("coneGrid");
     grid.innerHTML = "";
 
+    const coneColors = {
+        "Domingo": "black",
+        "Segunda": "blue",
+        "Terça": "yellow",
+        "Quarta": "green",
+        "Quinta": "orange",
+        "Sexta": "white",
+        "Sábado": "pink"
+    };
+
     for (const dia in cones) {
+
         const div = document.createElement("div");
         div.className = "cone-card";
+
+        div.onclick = () => filterCone(dia);
+
         div.innerHTML = `
-            <div class="cone-label">${dia}</div>
+            <div class="cone-header">
+                <div class="cone-circle" style="background:${coneColors[dia]}"></div>
+                <span>${dia}</span>
+            </div>
             <div class="cone-count">${cones[dia]}</div>
         `;
+
         grid.appendChild(div);
     }
 }
@@ -81,7 +130,12 @@ function filterStatus(status) {
     window.location.href = `/scan?status=${status}`;
 }
 
+function filterCone(dia) {
+    window.location.href = `/scan?cone=${dia}`;
+}
+
 loadDashboard();
+
 </script>
 
 </body>

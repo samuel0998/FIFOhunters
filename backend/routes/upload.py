@@ -1,22 +1,25 @@
 # routes/upload.py
+
 import pandas as pd
 from flask import Blueprint, request, jsonify
+from sqlalchemy import text
 from models.fifo_item import FIFOItem
 from extensions import db
 
 upload_bp = Blueprint("upload", __name__)
 
 
-# ---------- HELPERS ----------
+# ---------------- HELPERS ---------------- #
 
 def safe_str(value):
-    """
-    Converte qualquer valor para string limpa.
-    Remove .0 de números grandes (ISA, ISD, EAN etc).
-    """
     if pd.isna(value):
         return None
-    return str(value).strip().replace(".0", "")
+
+    # Corrige EAN/ISA grandes que viram float
+    if isinstance(value, float):
+        return format(int(value), "d")
+
+    return str(value).strip()
 
 
 def safe_int(value):
@@ -31,16 +34,19 @@ def safe_int(value):
 def safe_date(value):
     if pd.isna(value):
         return None
+
     dt = pd.to_datetime(value, errors="coerce")
     if pd.isna(dt):
         return None
+
     return dt.date()
 
 
-# ---------- ROUTE ----------
+# ---------------- ROUTE ---------------- #
 
 @upload_bp.route("/upload/excel", methods=["POST"])
 def upload_excel():
+
     if "file" not in request.files:
         return jsonify({"error": "Arquivo não enviado"}), 400
 
@@ -52,7 +58,7 @@ def upload_excel():
     try:
         df = pd.read_excel(file)
 
-        # NORMALIZA COLUNAS
+        # Normaliza colunas
         df.columns = (
             df.columns
             .str.strip()
@@ -62,18 +68,18 @@ def upload_excel():
             .str.replace("/", "_")
         )
 
-        # LIMPA TABELA (REESCREVE TUDO)
-        db.session.query(FIFOItem).delete()
+        # 🔥 APAGA TUDO COMPLETAMENTE
+        db.session.execute(text("TRUNCATE TABLE fifo_items RESTART IDENTITY"))
         db.session.commit()
 
         itens = []
 
         for _, row in df.iterrows():
+
             item = FIFOItem(
                 nfe_id=safe_str(row.get("nf_e_id")),
                 vendor=safe_str(row.get("vendor")),
 
-                # 🔥 CORREÇÃO DEFINITIVA DO ISA
                 isa=safe_str(row.get("isa")),
                 isd=safe_str(row.get("isd")),
 
